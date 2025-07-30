@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  srlabnotifier:
+    build: .
+    # command: sh -c "tail -F anything" # debug
+    command: >
+      sh -c "uvicorn main:app --reload"
+    container_name: srlabnotifier
+    ports:
+      - 8000:8000

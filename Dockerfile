@@ -1,10 +1,9 @@
-FROM python:3.8-buster
-
+FROM node:20.19.3-alpine
+RUN apk update && apk add tzdata && apk --no-cache add curl
+WORKDIR /usr/src/app
+RUN npm install -g @nestjs/cli
+COPY package*.json ./
+RUN npm install
 COPY . .
-WORKDIR /pypostgres
-
-RUN apt-get update -y
-RUN python -m pip install --upgrade pip
-RUN pip install -r requirements.txt
-
-EXPOSE 8000
+RUN npm run build
+CMD ["npm", "run", "start:dev"]
