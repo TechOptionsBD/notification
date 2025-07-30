@@ -1,0 +1,8 @@
+{
+  "hosting": {
+    "site": "notification-edge",
+
+    "public": "public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
+  }
+}

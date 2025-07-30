@@ -2,14 +2,17 @@ import json
 import asyncio
 import aiopg
 from starlette.endpoints import WebSocketEndpoint
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi import Depends, FastAPI, HTTPException, Request
 from starlette.websockets import WebSocket
 from pydantic import BaseModel
-
-
-dsn = "dbname=fast_food_db user=food_user password=password host=127.0.0.1"
+from .config import settings
 
 app = FastAPI()
+
+templates = Jinja2Templates(directory="templates")
 
 #pydantic model 
 class Order(BaseModel):
@@ -18,9 +21,13 @@ class Order(BaseModel):
     quantity: int
     id: int
 
-@app.get('/')
-def index():
-    return 'successfully run'
+@app.get("/")
+def get(request: Request):
+    return templates.TemplateResponse("orders.html", {"request": request})                                                                    
+
+@app.get("/trigger/{}")
+def get(request: Request):
+    return templates.TemplateResponse("orders.html", {"request": request})                                                                    
 
 @app.websocket_route("/order_events")
 class WebSocketOrders(WebSocketEndpoint):
@@ -53,7 +60,7 @@ class WebSocketOrders(WebSocketEndpoint):
 
     @asyncio.coroutine
     async def db_events(self, data: dict, channel: str):
-        async with aiopg.create_pool(dsn) as pool:
+        async with aiopg.create_pool(settings.SQLALCHEMY_DATABASE_URI) as pool:
             async with pool.acquire() as conn:
                 try:
                     await asyncio.gather(

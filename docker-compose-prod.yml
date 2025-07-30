@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  app:
+    container_name: chess-notification
+    image: chess-notification
+    build:
+      context: .
+      dockerfile: ./Dockerfile.prod
+    command: npm run start:dev
+    ports:
+      - 3015:3015
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+      - /usr/src/app/dist
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=develop
+      - PORT=3015
+      - DB_TYPE=postgres
+      - DB_HOST=db-postgresql-sgp1-91717-do-user-10167635-0.b.db.ondigitalocean.com
+      - DB_PORT=25060
+      - DB_USERNAME=devuser
+      - DB_PASSWORD=
+      - DB_NAME=loop_freight_dev
+      - REDIS_HOST=128.199.132.175
+      - REDIS_PORT=6379
+      - RABBITMQ_URL=amqp://admin:password123@128.199.132.175:5672
+      - USER_SERVICE=https://api-dev.loopfreight.io/lf-user/api/v1
+      - LOCATION_SERVICE=https://api-dev.loopfreight.io/lf-geolocation/api/v1
+      - SUPPLIER_SERVICE=https://api-dev.loopfreight.io/lf-sup/api/v1
+      - COMPANY_SERVICE=https://api-dev.loopfreight.io/lf-company/api/v1
+      - TRANSLATOR_SERVICE=https://api-dev.loopfreight.io/lf-trans/api/v1
+      - SECRET_KEY=hhggh5e45454gfgfcfcgfvhv434345678u
+      - GLOBAL_TOPIC=chess-global
+      - SMS_BASE_URL=https://powersms.banglaphone.net.bd/httpapi/sendsms
+      - SMS_USERNAME=
+      - SMS_PASSWORD=
+      - SENDGRID_API_KEY=
