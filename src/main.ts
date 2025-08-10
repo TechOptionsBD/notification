@@ -96,7 +96,7 @@ async function bootstrap() {
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'refresh-token',
     )
-    .addServer(`${process.env.BASE_URL}${process.env.API}`)
+    .addServer(`${process.env.BASE_URL}`)
     .build();
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);

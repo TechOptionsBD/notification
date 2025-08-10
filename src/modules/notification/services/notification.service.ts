@@ -202,4 +202,83 @@ export class NotificationService {
   //   const { notification, deliveryMethods } = job.data;
   //   await this.deliverNotification(notification, deliveryMethods);
   // });
+
+  async getNotificationsForUser(
+    userId: string,
+    filter: FilterNotificationDto,
+  ): Promise<[Notification[], number, number]> {
+    const { page, limit, isRead, ...rest } = filter;
+
+    const unreadPromise = this.notiRepos
+      .createQueryBuilder('notification')
+      .where(
+        'notification.receiver = :receiver AND notification.notificationStatus = :notificationStatus AND notification.status = :status AND notification.isRead = false',
+      )
+      .setParameters({
+        receiver: userId,
+        notificationStatus: NotificationStatus.ACTIVE,
+        status: Status.ACTIVE,
+      })
+      .getCount();
+
+    const notificationPromise = this.notiRepos
+      .createQueryBuilder('notification')
+      .where(
+        'notification.receiver = :receiver AND notification.notificationStatus = :notificationStatus AND notification.status = :status',
+      )
+      .andWhere(
+        isRead !== undefined ? 'notification.isRead = :isRead' : '1=1',
+        { isRead },
+      )
+      .setParameters({
+        receiver: userId,
+        notificationStatus: NotificationStatus.ACTIVE,
+        status: Status.ACTIVE,
+        ...(isRead !== undefined ? { isRead } : {}),
+      })
+      .take(limit)
+      .skip((page - 1) * limit)
+      .orderBy('notification.id', 'DESC')
+      .getManyAndCount();
+
+    const [unreadCount, [notifications, count]] = await Promise.all([
+      unreadPromise,
+      notificationPromise,
+    ]);
+
+    return [notifications, count, unreadCount];
+  }
+
+  async updateNotificationForUser(
+    userId: string,
+    body: UpdateNotificationDto,
+  ): Promise<{ success: boolean }> {
+    if (body.id === 'all') {
+      await this.notiRepos.update(
+        {
+          receiver: userId,
+          isRead: false,
+        },
+        { isRead: true },
+      );
+      return { success: true };
+    }
+
+    const exists = await this.notiRepos.findOne({
+      where: {
+        id: parseInt(body.id),
+        receiver: userId,
+      },
+    });
+
+    if (!exists) {
+      throw new BadRequestException(
+        'Invalid notification id or notification is not owned by the user.',
+      );
+    }
+
+    exists.isRead = true;
+    await this.notiRepos.save(exists);
+    return { success: true };
+  }
 }

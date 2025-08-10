@@ -7,13 +7,17 @@ import { Platform } from 'src/modules/broker/enums';
 import { CreateUserTokenDto } from '../dtos/create-user-token';
 import { UserTokenResponseDto } from '../serializers/user-token.response.dto';
 import { UserTokenService } from '../services/user-token.service';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('user-token')
 @UseGuards(AuthGuard)
-@Serialize(UserTokenResponseDto)
 @Controller('user-token')
 export class UserTokenController {
   constructor(private service: UserTokenService) {}
 
+  @ApiOperation({ summary: 'Create or update user token' })
+  @ApiResponse({ status: 201, type: UserTokenResponseDto })
+  @Serialize(UserTokenResponseDto)
   @Post('/')
   public async create(
     @Body() body: CreateUserTokenDto,

@@ -6,13 +6,17 @@ import { FilterNotificationDto } from '../dtos/filter-notification.dto';
 import { UpdateNotificationDto } from '../dtos/update-notification.dto';
 import { NotificationService } from '../services/notification.service';
 import { NotificationResponseDto } from '../serializers/notification.response.dto';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('notification')
 @UseGuards(AuthGuard)
 @Controller('notification')
-@Serialize(NotificationResponseDto)
 export class NotificationController {
   constructor(private notiService: NotificationService) {}
 
+  @ApiOperation({ summary: 'Get all notifications for user' })
+  @ApiResponse({ status: 201, type: NotificationResponseDto })
+  @Serialize(NotificationResponseDto)
   @Get('/')
   async getAll(@Query() filer: FilterNotificationDto, @User() user: UserType) {
     const [notifications, count, unreadCount] =
@@ -24,6 +28,9 @@ export class NotificationController {
     };
   }
 
+  @ApiOperation({ summary: 'Update notification status' })
+  @ApiResponse({ status: 201, type: NotificationResponseDto })
+  @Serialize(UpdateNotificationDto)
   @Put('/')
   async updateNotification(
     @Body() body: UpdateNotificationDto,

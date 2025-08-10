@@ -7,14 +7,17 @@ import { User, UserType } from 'src/decorators/user.decorator';
 import { FilterNotificationDto } from '../dtos/filter-notification.dto';
 import { NotificationService } from '../services/notification.service';
 import { NotificationResponseDto } from '../serializers/notification.response.dto';
+import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @UseGuards(AuthGuard, PermissionsGuard)
-@Permissions('Booking', ['admin'])
+// @Permissions('auth', ['admin'])
 @Controller('/admin/notification')
-@Serialize(NotificationResponseDto)
 export class AdminNotificationController {
   constructor(private notiService: NotificationService) {}
 
+  @ApiOperation({ summary: 'Get all notifications for admin' })
+  @ApiResponse({ status: 201, type: NotificationResponseDto })
+  @Serialize(NotificationResponseDto)
   @Get('/')
   async getAll(@Query() filer: FilterNotificationDto, @User() user: UserType) {
     const [notifications, count, unreadCount] =

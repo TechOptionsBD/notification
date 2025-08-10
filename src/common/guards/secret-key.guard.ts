@@ -3,11 +3,9 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
-  Logger,
   BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { TokenService } from 'src/common/services/token.service';
 
 @Injectable()
 export class SecretKeyGuard implements CanActivate {

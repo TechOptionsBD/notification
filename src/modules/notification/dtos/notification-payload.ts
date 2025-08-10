@@ -1,4 +1,5 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 
 export enum PayloadNotiType {
   FRIEND_REQUEST = 'friend-request',
@@ -17,10 +18,19 @@ export enum PayloadNotiStatus {
 }
 
 export class NotificationPayload {
+  @ApiProperty({
+    description: 'The type of notification payload',
+    enum: PayloadNotiType,
+    example: PayloadNotiType.FRIEND_REQUEST,
+  })
   @IsEnum(PayloadNotiType)
   @IsNotEmpty()
   type: PayloadNotiType;
 
+  @ApiProperty({
+    description: 'The unique identifier for the notification payload',
+    example: '12345',
+  })
   @IsEnum(PayloadNotiStatus)
   @IsNotEmpty()
   status: PayloadNotiStatus;
