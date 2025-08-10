@@ -7,6 +7,7 @@ import { HttpModule } from '@nestjs/axios';
 import { AdminNotificationController } from './controllers/admin-notification.controller';
 import { NotificationController } from './controllers/notification.controller';
 import { FirebaseModule } from '../firebase/firebase.module';
+import { SecretNotificationController } from './controllers/secret-notification.controller';
 
 @Module({
   imports: [
@@ -14,7 +15,11 @@ import { FirebaseModule } from '../firebase/firebase.module';
     HttpModule,
     forwardRef(() => FirebaseModule),
   ],
-  controllers: [NotificationController, AdminNotificationController],
+  controllers: [
+    NotificationController,
+    AdminNotificationController,
+    SecretNotificationController,
+  ],
   providers: [NotificationService, TokenService],
   exports: [NotificationService],
 })

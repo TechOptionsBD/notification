@@ -15,14 +15,14 @@ import { NotificationService } from '../services/notification.service';
 import { NotificationResponseDto } from '../serializers/notification.response.dto';
 import { ApiOperation, ApiResponse, ApiTags, ApiHeader } from '@nestjs/swagger';
 
-@ApiTags('notification')
+@ApiTags('secret-notification')
 @ApiHeader({
   name: 'secret-key',
   description: 'Secret key for authentication',
 })
 @UseGuards(SecretKeyGuard)
-@Controller('notification')
-export class NotificationController {
+@Controller('secret-notification')
+export class SecretNotificationController {
   constructor(private notiService: NotificationService) {}
 
   @ApiOperation({ summary: 'Get all notifications for a specific user' })
