@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { AnnounceUserDisableCommand } from '../commands/announce-user-disable.command';
-import { UserTokenService } from 'src/modules/user-token/services/user-token.service';
 import { FirebaseService } from 'src/modules/firebase/services/firebase.service';
+import { UserTokenService } from 'src/modules/user-token/services/user-token.service';
+import { AnnounceUserDisableCommand } from '../commands/announce-user-disable.command';
 
 @CommandHandler(AnnounceUserDisableCommand)
 @Injectable()
@@ -14,7 +14,7 @@ export class AnnounceUserDisableHandler
     private firebaseService: FirebaseService,
   ) {}
 
-  async execute(command: AnnounceUserDisableCommand): Promise<any> {
+  async execute(command: AnnounceUserDisableCommand): Promise<boolean> {
     const { userId, isEnabled } = command.body;
     // isEnabled can be true/false
     // isEnabled when comes true when don't need to execute below

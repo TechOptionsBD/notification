@@ -1,8 +1,15 @@
+import { HttpService } from '@nestjs/axios';
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpService } from '@nestjs/axios';
+import { AxiosResponse } from 'axios';
 import { lastValueFrom } from 'rxjs';
 import { Environment } from '../enums';
+
+interface SmsApiResponse {
+  isError?: boolean;
+  message?: string;
+  [key: string]: unknown;
+}
 
 @Injectable()
 export class SmsService {
@@ -30,7 +37,10 @@ export class SmsService {
     return value;
   }
 
-  public async send(phone: string, message: string): Promise<any> {
+  public async send(
+    phone: string,
+    message: string,
+  ): Promise<SmsApiResponse | true> {
     try {
       // Skip sending in non-production environments
       if (this.nodeEnv !== Environment.PRODUCTION) {
@@ -55,7 +65,9 @@ export class SmsService {
         phone,
       )}&smsText=${encodedMessage}`;
 
-      const response = await lastValueFrom(this.httpService.get(queryString));
+      const response = await lastValueFrom(
+        this.httpService.get<SmsApiResponse>(queryString),
+      );
 
       this.logger.log(
         JSON.stringify({

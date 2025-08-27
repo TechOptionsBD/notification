@@ -10,7 +10,7 @@ export class AnnounceUserPasswordHandler
 {
   constructor(private smsService: SmsService) {}
 
-  async execute(command: AnnounceUserPasswordCommand): Promise<any> {
+  async execute(command: AnnounceUserPasswordCommand): Promise<boolean> {
     const text = `Your passCode code is: ${command.body.password}`;
     await this.smsService.send(command.body.phone, text);
     return true;

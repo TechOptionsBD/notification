@@ -5,15 +5,12 @@ import {
   Logger,
   NestInterceptor,
 } from '@nestjs/common';
-import { Response, Request } from 'express';
+import { Request, Response } from 'express';
 import { Observable, tap } from 'rxjs';
 
 @Injectable()
 export class RequestLoggerInterceptor implements NestInterceptor {
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler<any>,
-  ): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     if (context.getType() === 'http') {
       const ctx = context.switchToHttp();
       const request = ctx.getRequest<Request>();

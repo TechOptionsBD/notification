@@ -9,7 +9,7 @@ export class AnnounceUserLoginHandler
   implements ICommandHandler<AnnounceUserLoginCommand>
 {
   constructor(private brokerService: BrokerService) {}
-  async execute(command: AnnounceUserLoginCommand): Promise<any> {
+  async execute(command: AnnounceUserLoginCommand): Promise<boolean | void> {
     const { deviceToken, platform, user } = command;
     if (this.brokerService.isConnected()) {
       const isPublished = await this.brokerService.userLogin(

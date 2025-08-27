@@ -5,14 +5,15 @@ import {
   HttpException,
 } from '@nestjs/common';
 import * as Sentry from '@sentry/node';
+import { Request, Response } from 'express';
 import { Environment } from '../enums';
 
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
   catch(exception: Error, host: ArgumentsHost) {
-    const ctx = host.switchToHttp(),
-      response = ctx.getResponse<any>(),
-      request = ctx.getRequest<Request>();
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
 
     let message: string = '',
       status: number = 400;

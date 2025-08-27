@@ -1,35 +1,49 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserType } from 'src/decorators/user.decorator';
-import { CommandBus } from '@nestjs/cqrs';
 import { ConfigService } from '@nestjs/config';
-import { Platform } from 'src/modules/broker/enums';
-import { AnnounceUserLoginCommand } from 'src/modules/broker/commands/announce-user-login.command';
-import { SmsService } from 'src/common/services/sms.service';
+import { CommandBus } from '@nestjs/cqrs';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Environment } from 'src/common/enums';
 import { MailService } from 'src/common/services/mail.service';
-import { UserToken } from '../entities/user-token.entity';
-import { FirebaseService } from 'src/modules/firebase/services/firebase.service';
-import { NotificationService } from 'src/modules/notification/services/notification.service';
-import { CreateUserTokenDto } from '../dtos/create-user-token';
-import { UserInactivityEventDto } from 'src/modules/broker/commands/announce-user-inactivity.command';
+import { SmsService } from 'src/common/services/sms.service';
+import { UserType } from 'src/decorators/user.decorator';
 import {
   IUserCreateDto,
   UserRole,
 } from 'src/modules/broker/commands/announce-user-create.command';
+import { UserInactivityEventDto } from 'src/modules/broker/commands/announce-user-inactivity.command';
+import { AnnounceUserLoginCommand } from 'src/modules/broker/commands/announce-user-login.command';
+import { Platform } from 'src/modules/broker/enums';
+import { FirebaseService } from 'src/modules/firebase/services/firebase.service';
 import { CreateNotificationDto } from 'src/modules/notification/dtos/create-notification.dto';
 import {
   PayloadNotiStatus,
   PayloadNotiType,
 } from 'src/modules/notification/dtos/notification-payload';
 import { NotificationType } from 'src/modules/notification/enums';
+import { NotificationService } from 'src/modules/notification/services/notification.service';
+import { Repository } from 'typeorm';
+import { CreateUserTokenDto } from '../dtos/create-user-token';
+import { UserToken } from '../entities/user-token.entity';
 
+/**
+ * Service for managing user tokens, device tokens, and related notifications.
+ * Handles user login, onboarding, inactivity, and notification delivery.
+ */
 @Injectable()
 export class UserTokenService {
   private readonly secretKey: string;
   private readonly nodeEnv: string;
 
+  /**
+   * Constructor for UserTokenService.
+   * @param userTokenRepos TypeORM repository for UserToken entity
+   * @param commandBus CQRS command bus for event publishing
+   * @param config ConfigService for environment/config values
+   * @param firebaseService Service for Firebase push notifications
+   * @param notiService Service for notification creation
+   * @param smsService Service for sending SMS
+   * @param mailService Service for sending emails
+   */
   constructor(
     @InjectRepository(UserToken)
     private readonly userTokenRepos: Repository<UserToken>,
@@ -51,6 +65,10 @@ export class UserTokenService {
     this.nodeEnv = nodeEnv;
   }
 
+  /**
+   * Create or update a user token for a given user and platform.
+   * Publishes a login event to RabbitMQ.
+   */
   public async createOrUpdate(
     body: CreateUserTokenDto,
     user: UserType,
@@ -79,6 +97,10 @@ export class UserTokenService {
     return existUser;
   }
 
+  /**
+   * Remove a device token for a user on a specific platform.
+   * Used when a user logs out or unsubscribes.
+   */
   public async userTokenByUserIdFromBroker(userId: string, platform: Platform) {
     const user = await this.userTokenRepos
       .createQueryBuilder('token')
@@ -92,6 +114,10 @@ export class UserTokenService {
     return user;
   }
 
+  /**
+   * Remove all device tokens for a user (web, ios, android).
+   * Used when a user is disabled.
+   */
   public async userUnsubWhenDisabled(userId: string) {
     const user = await this.userTokenRepos
       .createQueryBuilder('token')
@@ -114,6 +140,10 @@ export class UserTokenService {
     return user;
   }
 
+  /**
+   * Notify cluster heads when a new user is onboarded.
+   * Sends notifications and SMS to all cluster heads.
+   */
   public async sendUserCreateMessageToClusterHead(
     body: IUserCreateDto,
   ): Promise<boolean> {
@@ -175,6 +205,10 @@ export class UserTokenService {
     return true;
   }
 
+  /**
+   * Send email alerts to KAMs who are inactive.
+   * @param body List of inactive KAMs
+   */
   public async sendInactiveMailToKam(body: UserInactivityEventDto[]) {
     if (!body.length) return true;
 
@@ -193,6 +227,10 @@ export class UserTokenService {
     return true;
   }
 
+  /**
+   * Create and send a notification to a user.
+   * Optionally sends push, email, or SMS based on options.
+   */
   public async createNotification(
     receiver: string,
     message: string,
@@ -200,8 +238,7 @@ export class UserTokenService {
     payload: {
       status: PayloadNotiStatus;
       type: PayloadNotiType;
-      [key: string]: any;
-    },
+    } & Record<string, unknown>,
     type: NotificationType = NotificationType.USER,
     sender: string = 'system',
     options: {

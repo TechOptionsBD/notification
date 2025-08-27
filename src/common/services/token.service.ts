@@ -1,13 +1,14 @@
 import { HttpService } from '@nestjs/axios';
 import {
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
   UnauthorizedException,
-  HttpException,
-  HttpStatus,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { lastValueFrom } from 'rxjs';
+import { UserType } from 'src/decorators/user.decorator';
 
 @Injectable()
 export class TokenService {
@@ -18,7 +19,7 @@ export class TokenService {
     private readonly httpService: HttpService,
   ) {}
 
-  public async validate(token: string): Promise<any> {
+  public async validate(token: string): Promise<UserType> {
     if (!token) {
       throw new UnauthorizedException('Authorization token is required');
     }
@@ -32,7 +33,7 @@ export class TokenService {
 
     try {
       const response = await lastValueFrom(
-        this.httpService.get(`${userServiceUrl}/users/validate-token`, {
+        this.httpService.get<any>(`${userServiceUrl}/users/validate-token`, {
           headers,
         }),
       );
@@ -41,8 +42,8 @@ export class TokenService {
       if (!user) {
         throw new UnauthorizedException('User not found');
       }
-
-      return user;
+      // Ensure the returned object matches UserType
+      return user as UserType;
     } catch (error) {
       this.logger.error(
         `Token validation failed: ${error.message}`,
